@@ -1,0 +1,169 @@
+<html>
+<head><title>Tennis Game</title></head>
+<body>
+<canvas id="mycanvas" width="800" height="700">
+</canvas>
+<script>
+	var canvas;
+	var canvasContext;
+	var moveX=100;
+	var moveY=200;
+	
+	var speedX=5;
+	var speedY=10;
+	
+	var paddle1=200;
+	var paddle2=200;
+	
+	var win=50;
+	var stop=false;
+	
+	const PADDLE_HEIGHT=100;
+	const PADDLE_WIDTH=10;
+	
+	var score1=0;
+	var score2=0;
+	
+	window.onload= function(){																	//onload Function starts
+		canvas = document.getElementById('mycanvas');
+		canvasContext = canvas.getContext('2d');
+		var framePerSec=20;
+		
+		setInterval(function(){
+							draw();
+							dance();},1000/framePerSec);
+		
+		canvas.addEventListener('mousedown', function(evt){
+															if(stop){
+																score1=0;
+																score2=0;
+																stop=false;
+															}
+										});
+		
+		canvas.addEventListener('mousemove',function(evt){										   //move paddle1 along with mouse pointer
+													var pos= calculateMousePointer(evt);
+													paddle1=pos.Y-PADDLE_HEIGHT/2;
+										}); 
+						}																			//onload Ends															
+
+function calculateMousePointer(evt){																	// calculates mouse pointer's position
+	var rect = canvas.getBoundingClientRect();
+	var root = document.documentElement;
+	var mouseX= evt.clientX - rect.left - root.scrollLeft;
+	var mouseY= evt.clientY - rect.top - root.scrollTop;
+	
+	return{
+		X: mouseX,
+		Y: mouseY
+		};
+}							
+function net(){																						//draws net
+	for(var i=0; i<= canvas.height;i+=40){
+		drawRect(canvas.width/2-1,i,1,20,'white');
+	}
+}																									//net ends
+
+function draw(){
+	drawRect(0,0,canvas.width,canvas.height,'black');												//draws canvas
+	
+	drawCircle(moveX,moveY,10,'white');																//draws ball of radius 10
+	
+	drawRect(5,paddle1,PADDLE_WIDTH,PADDLE_HEIGHT,'white');											//draws paddle1
+	
+	drawRect(canvas.width-PADDLE_WIDTH-5,paddle2,PADDLE_WIDTH,PADDLE_HEIGHT,'white');				//draws paddle2
+	
+	canvasContext.fillText("Player 1",100,80);														//displays player numbers
+	canvasContext.fillText("Player 2",canvas.width-100,80);
+	
+	canvasContext.fillText(score1,100,100);															//displays scores
+	canvasContext.fillText(score2,canvas.width-100,100);
+	
+	net();																							//draws net onload
+	
+	if(score1>=win || score2>=win){																	//stops if game is won by any player
+		winner();
+		stop=true;
+	}
+}																									//draw ends
+
+function winner(){																					//decides winner
+	canvasContext.fillStyle='white';
+	if(score1>=win)
+		canvasContext.fillText("Player 1 Wins !!!", canvas.width/2+10, canvas.height/2);
+	else
+		canvasContext.fillText("Player 2 Wins !!!", canvas.width/2+10, canvas.height/2);
+}																									//winner ends
+
+function ballReset(){																				//repositions ball
+	speedX= -speedX;
+	moveX=canvas.width/2;
+	moveY=canvas.height/2;
+}																									//ballReset ends
+
+function computerPlayer(){																			//Player2 Bot
+	var paddle2_centre = paddle2 + PADDLE_HEIGHT/2;
+		
+		if(paddle2_centre<moveY-50)
+			paddle2+=20;
+		else if(paddle2_centre>moveY+50)
+			paddle2-=20;
+}																									//computerPlayer ends
+
+function dance(){
+	if(stop){
+		winner();
+		canvasContext.fillText("Press F5 or click anywhere to Replay...",canvas.width/2,canvas.height/2+30);
+		return;
+	}
+	
+	computerPlayer();
+	moveX += speedX;
+	moveY += speedY;
+	
+	if(moveX>canvas.width-20){																			//horizontal Bounce
+		if(moveY>paddle2-5 && moveY<paddle2+PADDLE_HEIGHT+5){
+			speedX = -speedX;
+			var deltaY = moveY-(paddle2 + PADDLE_HEIGHT/2);
+			speedY= deltaY*0.2;
+			score2+=5;
+			}
+		else{
+			ballReset();
+			score2--;
+		}
+	}
+	
+	if(moveX<20){
+		if(moveY>paddle1-5 && moveY<paddle1+PADDLE_HEIGHT+5){
+			speedX = -speedX;
+			var deltaY = moveY-(paddle1 + PADDLE_HEIGHT/2);
+			speedY= deltaY*0.2;
+			score1+=5;
+			}
+		else{
+			ballReset();
+			score1--;
+			}
+		}
+		
+	if(moveY>canvas.height-20)																	//Vertical Bounce
+		speedY=-speedY;
+	if(moveY<20)
+		speedY=-speedY;
+}																								//Dance ends
+		
+function drawRect(x,y,width,height,color){													   //draws rectangle
+		canvasContext.fillStyle=color;
+		canvasContext.fillRect(x,y,width,height);
+	}
+						
+function drawCircle(xc,yc,radius,colorit){													//draws circle
+		canvasContext.fillStyle=colorit;
+		canvasContext.beginPath();
+		canvasContext.arc(xc,yc,radius,0,Math.PI*2,true);
+		canvasContext.fill();
+	}
+</script>	
+</body>
+</html>
